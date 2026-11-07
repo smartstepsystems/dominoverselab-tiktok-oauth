@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TikTok OAuth — dominoverselab</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+           max-width: 760px; margin: 48px auto; padding: 0 20px; }
+    h1 { font-size: 1.35rem; margin-bottom: 4px; }
+    p.sub { margin-top: 0; opacity: .7; }
+    label { display: block; margin: 16px 0 4px; font-weight: 600; }
+    input, textarea { width: 100%; box-sizing: border-box; padding: 10px;
+           font: 14px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+           border: 1px solid #8884; border-radius: 8px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    button { padding: 10px 14px; border-radius: 8px; border: 1px solid #8884;
+             cursor: pointer; font: 600 14px system-ui; }
+    #erro { color: #c0392b; font-weight: 600; }
+    #ok { color: #1e8449; font-weight: 600; }
+    code { background: #8882; padding: 1px 5px; border-radius: 5px; }
+    .hint { opacity: .7; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <h1>Autorização TikTok — dominoverselab</h1>
+  <p class="sub">Página de redirect do OAuth. Copie o <code>code</code> e cole no CLI do <code>publisher</code>.</p>
+
+  <p id="erro"></p>
+  <p id="ok"></p>
+
+  <label for="code">code</label>
+  <div class="row">
+    <input id="code" readonly placeholder="(nenhum code na URL)">
+    <button id="copiar" type="button">Copiar</button>
+  </div>
+
+  <label for="state">state</label>
+  <input id="state" readonly placeholder="(nenhum state na URL)">
+
+  <p class="hint" style="margin-top:24px">
+    Se esta página abrir <em>sem</em> <code>code</code>, a autorização não foi concluída
+    (você cancelou ou a <code>redirect_uri</code> não bateu com a registrada no app).
+  </p>
+
+  <script>
+    const p = new URLSearchParams(location.search);
+    const code = p.get("code") || "";
+    const state = p.get("state") || "";
+    const erro = p.get("error") || "";
+
+    document.getElementById("code").value = code;
+    document.getElementById("state").value = state;
+
+    if (erro) {
+      document.getElementById("erro").textContent =
+        "Erro: " + erro + " " + (p.get("error_description") || "");
+    } else if (code) {
+      document.getElementById("ok").textContent =
+        "Tudo certo — copie o code abaixo (ele expira rápido, troque já por um token).";
+    }
+
+    document.getElementById("copiar").addEventListener("click", async () => {
+      const campo = document.getElementById("code");
+      if (!campo.value) return;
+      try {
+        await navigator.clipboard.writeText(campo.value);
+        document.getElementById("copiar").textContent = "Copiado!";
+        setTimeout(() => (document.getElementById("copiar").textContent = "Copiar"), 1500);
+      } catch {
+        campo.select();
+        document.execCommand("copy");
+      }
+    });
+  </script>
+</body>
+</html>
